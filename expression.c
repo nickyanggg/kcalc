@@ -240,8 +240,22 @@ static int mult(int a, int b)
     int n1 = GET_NUM(a);
     int n2 = GET_NUM(b);
     int n3 = n1 * n2;
+    if (n2 != 0 && n1 != n3 / n2) {
+        printk("Warning: NUM overflow!");
+        return FP2INT(-1, 0);
+    }
 
-    return FP2INT(n3, (frac1 + frac2));
+    int c = FP2INT(n3, (frac1 + frac2));
+    int frac3 = GET_FRAC(c);
+    if (frac1 > 0 && frac2 > 0 && frac3 < 0) {
+        printk("Warning: FRAC overflow!");
+        return FP2INT(-1, 0);
+    }
+    if (frac1 < 0 && frac2 < 0 && frac3 > 0) {
+        printk("Warning: FRAC overflow!");
+        return FP2INT(-1, 0);
+    }
+    return c;
 }
 
 static int divid(int a, int b)
@@ -254,6 +268,10 @@ static int divid(int a, int b)
         return NAN_INT;
     if (n2 == 0)
         return INF_INT;
+    if (n1 < 0) {
+        n1 = -n1;
+        n2 = -n2;
+    }
 
     while (n1 * 10 < ((1 << 25) - 1)) {
         --frac1;
@@ -261,7 +279,6 @@ static int divid(int a, int b)
     }
     int n3 = n1 / n2;
     int frac3 = frac1 - frac2;
-
     return FP2INT(n3, frac3);
 }
 
@@ -345,9 +362,16 @@ static int plus(int a, int b)
         }
     }
 
-    n1 += n2;
-
-    return FP2INT(n1, frac1);
+    int n3 = n1 + n2;
+    if (n1 > 0 && n2 > 0 && n3 < 0) {
+        printk("Warning: NUM overflow!");
+        return FP2INT(-1, 0);
+    }
+    if (n1 < 0 && n2 < 0 && n3 > 0) {
+        printk("Warning: FRAC overflow!");
+        return FP2INT(-1, 0);
+    }
+    return FP2INT(n3, frac1);
 }
 
 static int minus(int a, int b)
@@ -367,8 +391,12 @@ static int minus(int a, int b)
         }
     }
 
-    n1 -= n2;
-    return FP2INT(n1, frac1);
+    int n3 = n1 - n2;
+    if ((n3 < n1) != (n2 > 0)) {
+        printk("Warning: NUM overflow!");
+        return FP2INT(-1, 0);
+    }
+    return FP2INT(n3, frac1);
 }
 
 static int compare(int a, int b)

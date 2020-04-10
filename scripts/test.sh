@@ -58,8 +58,8 @@ test_op 'x=5, x=(x!=0)' # should be 1
 test_op 'x=5, x = x+1' # should be 6
 
 # fancy variable name
-test_op 'six=6, seven=7, six*seven' # should be 42
-test_op '小熊=6, 維尼=7, 小熊*維尼' # should be 42
+test_op 'six=0.2, seven=0.3, six*seven' # should be 42
+test_op '小熊=222222, 維尼=333333, 小熊*維尼' # should be 42
 test_op 'τ=1.618, 3*τ' # should be 3 * 1.618 = 4.854
 test_op '$(τ, 1.618), 3*τ()' # shold be 3 * 1.618 = 4.854
 
@@ -69,13 +69,13 @@ test_op '$(one, 1), one()+one(1)+one(1, 2, 4)' # should be 3
 test_op '$(number, 1), $(number, 2+3), number()' # should be 5
 
 # pre-defined function
-test_op 'nop()'
+test_op 'fib(10)'
 
 # Livepatch
 sudo insmod $LIVEPATCH_CALC_MOD
 sleep 1
 echo "livepatch was applied"
-test_op 'nop()'
+test_op 'fib(10)'
 dmesg | tail -n 6
 echo "Disabling livepatch..."
 sudo sh -c "echo 0 > /sys/kernel/livepatch/livepatch_calc/enabled"
